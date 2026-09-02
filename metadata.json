@@ -1,0 +1,6 @@
+{
+  "name": "Auralis AI Captioning Tool",
+  "description": "Accessible AI captioning & video formatting engine designed for Hack for Humanity. Empowers Deaf, Hard of Hearing, and neurodivergent audiences with emotion tags, audio brackets, and adaptive typography.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,184 @@
+@import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Anton&family=Archivo:wght@400;700&family=Bebas+Neue&family=Bungee&family=Comfortaa:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;700&family=Fira+Sans:wght@400;700&family=Heebo:wght@400;700&family=Inter:wght@400;700&family=JetBrains+Mono:wght@400;700&family=Josefin+Sans:wght@400;700&family=Kanit:wght@400;700&family=Lato:wght@400;700&family=League+Spartan:wght@400;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lilita+One&family=Lobster&family=Montserrat:wght@400;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;700&family=Oswald:wght@400;700&family=Outfit:wght@400;700&family=Pacifico&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Poppins:wght@400;700&family=Quicksand:wght@400;700&family=Raleway:wght@400;700&family=Righteous&family=Roboto:wght@400;700&family=Rubik:wght@400;700&family=Space+Grotesk:wght@400;700&family=Syne:wght@400;700&family=Ubuntu:wght@400;700&family=Unbounded:wght@400;700&family=Work+Sans:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Pixelify+Sans:wght@400..700&display=swap');
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --animate-fade-in: fade-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-slide-up: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-cloud-drift-1: cloud-drift-1 120s linear infinite;
+  --animate-cloud-drift-2: cloud-drift-2 150s linear infinite reverse;
+  --animate-cloud-drift-3: cloud-drift-3 100s linear infinite;
+  --animate-pop: pop 2s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite;
+  --animate-glitch: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+  --animate-motion-blur: motion-blur 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  --animate-progress: progress 4s ease-in-out infinite;
+
+  --color-auralis: #D4AF37;
+  --color-gold-cream: #FFFFFF;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-tech: "Space Mono", monospace;
+  --font-pixel: "Pixelify Sans", sans-serif;
+
+  /* Color Palette Mappings for Light Mode */
+  --color-zinc-50: #FFFFFF;   /* Background White */
+  --color-zinc-100: #F5F7FA;  /* Surface Light Gray */
+  --color-zinc-150: #FDF7E3;  /* Accent Background Light Beige */
+  --color-zinc-200: #E2E8F0;  /* Borders */
+  --color-zinc-205: #CBD5E1;  /* Borders darker */
+  --color-zinc-250: #CBD5E1;
+  --color-zinc-300: #94A3B8;
+  --color-zinc-400: #D4AF37;  /* Primary Golden */
+  --color-zinc-450: #64748B;
+  --color-zinc-500: #333F48;  /* Text Secondary Charcoal */
+  --color-zinc-600: #1E293B;
+  --color-zinc-700: #0D1B2A;  /* Text Primary Navy Blue */
+  --color-zinc-705: #0A1521;
+  --color-zinc-750: #0A1521;
+  --color-zinc-800: #050A0F;  /* Darkest Headings */
+  --color-zinc-805: #020508;
+  --color-zinc-900: #000000;
+  --color-zinc-950: #000000;
+  
+  --color-white: #FFFFFF;
+  --color-black: #0D1B2A;
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(16px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @keyframes cloud-drift-1 {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-2%, 2%) scale(1.05); }
+    100% { transform: translate(0, 0) scale(1); }
+  }
+  @keyframes cloud-drift-2 {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(3%, -1%) scale(1.08); }
+    100% { transform: translate(0, 0) scale(1); }
+  }
+  @keyframes cloud-drift-3 {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(1%, -3%) scale(1.1); }
+    100% { transform: translate(0, 0) scale(1); }
+  }
+  @keyframes pop {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+  @keyframes glitch {
+    0% { text-shadow: 0.05em 0 0 rgba(255,0,0,.75), -0.025em -0.05em 0 rgba(0,255,0,.75), 0.025em 0.05em 0 rgba(0,0,255,.75); }
+    14% { text-shadow: 0.05em 0 0 rgba(255,0,0,.75), -0.025em -0.05em 0 rgba(0,255,0,.75), 0.025em 0.05em 0 rgba(0,0,255,.75); }
+    15% { text-shadow: -0.05em -0.025em 0 rgba(255,0,0,.75), 0.025em 0.025em 0 rgba(0,255,0,.75), -0.05em -0.05em 0 rgba(0,0,255,.75); }
+    49% { text-shadow: -0.05em -0.025em 0 rgba(255,0,0,.75), 0.025em 0.025em 0 rgba(0,255,0,.75), -0.05em -0.05em 0 rgba(0,0,255,.75); }
+    50% { text-shadow: 0.025em 0.05em 0 rgba(255,0,0,.75), 0.05em 0 0 rgba(0,255,0,.75), 0 -0.05em 0 rgba(0,0,255,.75); }
+    99% { text-shadow: 0.025em 0.05em 0 rgba(255,0,0,.75), 0.05em 0 0 rgba(0,255,0,.75), 0 -0.05em 0 rgba(0,0,255,.75); }
+    100% { text-shadow: -0.025em 0 0 rgba(255,0,0,.75), -0.025em -0.025em 0 rgba(0,255,0,.75), -0.025em -0.05em 0 rgba(0,0,255,.75); }
+  }
+  @keyframes motion-blur {
+    0% { transform: translateX(0); filter: blur(0px); }
+    20% { transform: translateX(50px); filter: blur(4px); }
+    40% { transform: translateX(0); filter: blur(0px); }
+    100% { transform: translateX(0); filter: blur(0px); }
+  }
+  @keyframes progress {
+    0% { width: 0%; }
+    50% { width: 100%; }
+    100% { width: 0%; }
+  }
+
+  @keyframes highlight-wipe {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-[#FFFFFF] text-[#0D1B2A] dark:bg-[#050505] dark:text-[#F3F4F6] selection:bg-[#6B46C1]/30 selection:text-white;
+  }
+}
+
+/* Premium Gold Gradient */
+.bg-gold-premium {
+  background: linear-gradient(135deg, #FDF7E3 0%, #D4AF37 50%, #B4942E 100%);
+}
+
+.bg-gold-premium-hover:hover {
+  background: linear-gradient(135deg, #FFFFFF 0%, #E2C255 50%, #C4A133 100%);
+}
+
+.text-gold-gradient {
+  background: linear-gradient(135deg, #FDF7E3 0%, #D4AF37 40%, #B4942E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gold-glow {
+  box-shadow: 0 4px 20px rgba(223, 172, 36, 0.15);
+}
+
+.gold-glow-strong {
+  box-shadow: 0 0 25px rgba(223, 172, 36, 0.3);
+}
+
+.gold-border-glow:focus {
+  border-color: #DFAC24;
+  box-shadow: 0 0 0 2px rgba(223, 172, 36, 0.2);
+}
+
+/* Smooth active pulses for timeline / uploaders */
+@keyframes goldPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(0.995);
+  }
+}
+
+.animate-[goldPulse_3s_infinite] {
+  animation: goldPulse 3s infinite ease-in-out;
+}
+
+/* Modern elegant theme-matching custom scrollbars */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-auralis, #B27B2B);
+  opacity: 0.16;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  transition: background-color 0.2s;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-auralis, #B27B2B);
+  opacity: 0.45;
+}
+
+/* Scrollbar support for Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #B27B2B transparent;
+}
+
+
+html {
+  scroll-behavior: smooth;
+}

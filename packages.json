@@ -1,0 +1,89 @@
+{
+  "launch": {
+    "id": "launch",
+    "price": 900,
+    "credits": 500,
+    "plan": "Special Offer",
+    "name": "Starter Pack",
+    "color": "emerald",
+    "tagline": "One Time Offer",
+    "is_one_time": true,
+    "features": [
+      "500 Credits instantly"
+    ]
+  },
+  "creator": {
+    "id": "creator",
+    "price": 9900,
+    "credits": 2000,
+    "plan": "Creator",
+    "name": "Creator",
+    "color": "gray",
+    "tagline": "For emerging creators.",
+    "is_one_time": false,
+    "features": [
+      "2000 Credits",
+      "Standard Support"
+    ]
+  },
+  "pro": {
+    "id": "pro",
+    "price": 29900,
+    "credits": 6000,
+    "plan": "Pro",
+    "name": "Pro",
+    "color": "yellow",
+    "tagline": "Most Popular",
+    "is_one_time": false,
+    "features": [
+      "6000 Credits",
+      "Priority Support",
+      "Advanced Export"
+    ]
+  },
+  "studio": {
+    "id": "studio",
+    "price": 59900,
+    "credits": 12000,
+    "plan": "Studio",
+    "name": "Studio",
+    "color": "purple",
+    "tagline": "For agencies & large teams.",
+    "is_one_time": false,
+    "features": [
+      "12000 Credits",
+      "24/7 Support",
+      "Custom Branding"
+    ]
+  },
+  "launch_2": {
+    "id": "launch_2",
+    "price": 4900,
+    "credits": 600,
+    "plan": "Starter Pack 2",
+    "name": "Brand Kit Starter",
+    "color": "emerald",
+    "tagline": "Special Upgrade",
+    "is_one_time": true,
+    "features": [
+      "600 Credits instantly",
+      "Brand Kit access"
+    ]
+  },
+  "starter_67": {
+    "id": "starter_67",
+    "price": 6700,
+    "credits": 670,
+    "plan": "Starter",
+    "name": "Starter",
+    "color": "blue_pink",
+    "tagline": "67",
+    "is_one_time": false,
+    "allow_coupons": false,
+    "features": [
+      "670 Credits",
+      "Brand Kit Access",
+      "60 FPS Export"
+    ]
+  }
+}
