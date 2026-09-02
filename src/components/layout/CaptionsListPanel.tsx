@@ -539,7 +539,7 @@ export const CaptionsListPanel = React.memo(function CaptionsListPanel({ caption
   const handleModeChange = useCallback((mode: AccessibilityCaptionMode, wordsPerSegOverride?: number) => {
     setCaptionMode(mode);
     const targetWords = wordsPerSegOverride || MODE_DEFAULT_WORDS_PER_SEGMENT[mode] || 5;
-    setStyle({ wordsPerSegment: targetWords });
+    setStyle({ wordsPerSegment: targetWords, textAlign: 'center', positionX: 50 });
 
     const source = semanticTimeline?.segments && semanticTimeline.segments.length > 0 
       ? semanticTimeline.segments 

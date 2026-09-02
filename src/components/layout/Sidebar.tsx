@@ -742,7 +742,7 @@ const CAPTION_GRID_PRESETS: Array<{id: string, name: string, style: AnimationSty
     section: 'tv',
     description: 'Kinetic terminal layout',
     depthEnabled: false,
-    defaultSettings: { wordsPerSegment: 12, maxLines: 3, fontSize: 46, fontFamily: 'JetBrains Mono', fontWeight: '600', textAlign: 'left', positionX: 10, positionY: 85, textColor: '#00FF00', highlightColor: '#00FF00' }
+    defaultSettings: { wordsPerSegment: 12, maxLines: 3, fontSize: 46, fontFamily: 'JetBrains Mono', fontWeight: '600', textAlign: 'center', positionX: 50, positionY: 80, textColor: '#00FF00', highlightColor: '#00FF00' }
   },
   {
     id: 'person-mask',
@@ -908,6 +908,8 @@ export function Sidebar({
 }: SidebarProps) {
   const applyStyleWithAutoSemantics = React.useCallback((styleUpdates: Partial<GlobalStyle>) => {
     updateStyle({
+      textAlign: 'center',
+      positionX: 50,
       ...styleUpdates,
       aiAdaptiveLines: true,
       aiAdaptiveEmphasis: true,
@@ -1143,6 +1145,7 @@ export function Sidebar({
   });
 
   const [isRetranscribing, setIsRetranscribing] = useState(false);
+  const [retranscribeProgress, setRetranscribeProgress] = useState(0);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const handleRetranscribe = async () => {
@@ -1165,6 +1168,16 @@ export function Sidebar({
       message: `This will overwrite your existing subtitles. Do you want to proceed?`,
       confirmText: "Re-transcribe",
       onConfirm: async () => {
+        let currentPct = 10;
+        setRetranscribeProgress(10);
+        storeState.setTranscriptionProgress(10);
+        const timer = setInterval(() => {
+          currentPct += (90 - currentPct) * 0.08;
+          const clamped = Math.min(92, Math.round(currentPct));
+          setRetranscribeProgress(clamped);
+          useStore.getState().setTranscriptionProgress(clamped);
+        }, 300);
+
         try {
           setIsRetranscribing(true);
           let res: Response | null = null;
@@ -1258,6 +1271,9 @@ export function Sidebar({
             const parsed = parseSRT(srtText);
             
             if (parsed.length > 0) {
+              clearInterval(timer);
+              setRetranscribeProgress(100);
+              useStore.getState().setTranscriptionProgress(100);
               onUpdateCaptions(parsed);
               await deductCredits(creditsNeeded);
               alert("Transcription complete!", "Success");
@@ -1268,9 +1284,11 @@ export function Sidebar({
             throw new Error("No SRT data returned from transcription.");
           }
         } catch (err: any) {
+          clearInterval(timer);
           console.error(err);
           alert(err.message || "An error occurred during transcription.", "Error");
         } finally {
+          clearInterval(timer);
           setIsRetranscribing(false);
         }
       }
@@ -2497,21 +2515,34 @@ export function Sidebar({
                   onClick={handleRetranscribe}
                   disabled={isRetranscribing}
                   className={cn(
-                    "w-full p-4 rounded-xl border flex items-center justify-center gap-2 text-center transition-all duration-300 cursor-pointer hover:opacity-80 active:scale-[0.98] mt-2",
+                    "w-full p-4 rounded-xl border flex flex-col items-center justify-center gap-2 text-center transition-all duration-300 cursor-pointer hover:opacity-80 active:scale-[0.98] mt-2",
                     isLight 
                       ? "border-auralis/20 bg-auralis/5 text-auralis font-bold" 
                       : "border-auralis/20 bg-auralis/10 text-auralis font-bold",
-                    isRetranscribing && "opacity-50 cursor-not-allowed pointer-events-none"
+                    isRetranscribing && "opacity-90 cursor-not-allowed pointer-events-none"
                   )}
                 >
                   {isRetranscribing ? (
-                    <Loader2 size={14} className="animate-spin" />
+                    <div className="w-full flex flex-col items-center gap-1.5">
+                      <div className="flex items-center gap-2">
+                        <Loader2 size={14} className="animate-spin text-auralis shrink-0" />
+                        <span className="text-[11px] font-bold tracking-tight">
+                          Transcribing ({retranscribeProgress}%)...
+                        </span>
+                      </div>
+                      <div className="w-full h-2 bg-auralis/20 rounded-full overflow-hidden p-0.5">
+                        <div 
+                          className="h-full bg-auralis rounded-full transition-all duration-300"
+                          style={{ width: `${Math.min(100, Math.max(5, retranscribeProgress))}%` }}
+                        />
+                      </div>
+                    </div>
                   ) : (
-                    <RotateCw size={14} />
+                    <div className="flex items-center gap-2">
+                      <RotateCw size={14} />
+                      <span className="text-[11px] font-bold tracking-tight">Re-transcribe Video</span>
+                    </div>
                   )}
-                  <span className="text-[11px] font-bold tracking-tight">
-                    {isRetranscribing ? 'Transcribing...' : 'Re-transcribe Video'}
-                  </span>
                 </button>
 
                 {/* Subtitle operations panel */}

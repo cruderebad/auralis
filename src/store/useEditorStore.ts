@@ -75,6 +75,7 @@ export interface EditorStoreState {
   isAnalyzingSemantic: boolean;
   semanticAnalysisStep: string;
   semanticAnalysisError: string | null;
+  transcriptionProgress: number;
 
   setSemanticTimeline: (timeline: SemanticTimeline | null) => void;
   setCaptionMode: (mode: AccessibilityCaptionMode) => void;
@@ -82,6 +83,7 @@ export interface EditorStoreState {
   setIsAnalyzingSemantic: (isAnalyzing: boolean) => void;
   setSemanticAnalysisStep: (step: string) => void;
   setSemanticAnalysisError: (err: string | null) => void;
+  setTranscriptionProgress: (progress: number) => void;
   aspectRatio: '16:9' | '9:16' | '1:1' | '4:5';
   resolution: string; // e.g., '1080p', '720p'
   resolutionSize: { width: number; height: number };
@@ -241,6 +243,7 @@ export const useEditorStore = create<EditorStoreState>()(persist((set, get) => (
   isAnalyzingSemantic: false,
   semanticAnalysisStep: '',
   semanticAnalysisError: null,
+  transcriptionProgress: 0,
 
   setSemanticTimeline: (timeline) => set({ semanticTimeline: timeline }),
   setCaptionMode: (mode) => set({ captionMode: mode }),
@@ -250,6 +253,7 @@ export const useEditorStore = create<EditorStoreState>()(persist((set, get) => (
   setIsAnalyzingSemantic: (isAnalyzing) => set({ isAnalyzingSemantic: isAnalyzing }),
   setSemanticAnalysisStep: (step) => set({ semanticAnalysisStep: step }),
   setSemanticAnalysisError: (err) => set({ semanticAnalysisError: err }),
+  setTranscriptionProgress: (progress) => set({ transcriptionProgress: Math.min(100, Math.max(0, Math.round(progress))) }),
   aspectRatio: '9:16',
   resolution: '1080p',
   resolutionSize: { width: 1080, height: 1920 },

@@ -40,8 +40,8 @@ export function CaptionAccessibilityPanel({
   const handleModeSelect = (mode: AccessibilityCaptionMode) => {
     store.setCaptionMode(mode);
     const targetWords = MODE_DEFAULT_WORDS_PER_SEGMENT[mode] || 5;
-    store.setStyle({ wordsPerSegment: targetWords });
-    updateStyle({ wordsPerSegment: targetWords });
+    store.setStyle({ wordsPerSegment: targetWords, textAlign: 'center', positionX: 50 });
+    updateStyle({ wordsPerSegment: targetWords, textAlign: 'center', positionX: 50 });
 
     if (captions && captions.length > 0 && onUpdateCaptions) {
       const semTimeline = store.semanticTimeline;

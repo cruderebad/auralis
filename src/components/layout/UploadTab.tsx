@@ -21,6 +21,7 @@ export function UploadTab({ onVideoUpload, onSRTUpload, onTranscriptionComplete,
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<string>('');
   const [currentStep, setCurrentStep] = useState<number>(1);
+  const [progressPercent, setProgressPercent] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -115,12 +116,19 @@ export function UploadTab({ onVideoUpload, onSRTUpload, onTranscriptionComplete,
     return captions;
   };
 
+  const updateProgress = (val: number) => {
+    const clamped = Math.min(100, Math.max(0, Math.round(val)));
+    setProgressPercent(clamped);
+    useStore.getState().setTranscriptionProgress(clamped);
+  };
+
   const processSRTFile = async (file: File) => {
     setError(null);
     setIsUploading(true);
     onUploadStateChange?.(true);
     setUploadStatus('Parsing SRT file...');
     setCurrentStep(1);
+    updateProgress(15);
 
     try {
       const text = await file.text();
@@ -129,14 +137,17 @@ export function UploadTab({ onVideoUpload, onSRTUpload, onTranscriptionComplete,
         throw new Error("No subtitle segments found in the uploaded SRT file. Please verify file formatting.");
       }
 
+      updateProgress(45);
       setUploadStatus('Auto-analyzing emotions & speech semantics...');
       setCurrentStep(2);
 
       const enrichedCaptions = await runAutomaticSemanticAnalysis(parsed);
 
+      updateProgress(90);
       setUploadStatus('Finalizing caption timeline...');
       setCurrentStep(3);
 
+      updateProgress(100);
       onTranscriptionComplete(enrichedCaptions, text);
     } catch (err: any) {
       console.error("SRT processing error:", err);
@@ -161,11 +172,21 @@ export function UploadTab({ onVideoUpload, onSRTUpload, onTranscriptionComplete,
     onUploadStateChange?.(true);
     setUploadStatus('Loading media duration...');
     setCurrentStep(1);
+    updateProgress(5);
     
+    // Interval timer to smoothly animate percentage while waiting for backend APIs
+    let currentPct = 5;
+    const progressTimer = setInterval(() => {
+      currentPct += (70 - currentPct) * 0.08;
+      if (currentPct > 72) currentPct = 72;
+      updateProgress(currentPct);
+    }, 300);
+
     try {
       await onVideoUpload(file);
       
       const duration = await getDuration(file);
+      updateProgress(12);
       
       let maxDuration = 180; // 3 minutes default
       const plan = (profile?.plan || '').toLowerCase();
@@ -186,6 +207,7 @@ export function UploadTab({ onVideoUpload, onSRTUpload, onTranscriptionComplete,
       if (file.type.startsWith('video/')) {
         try {
           setUploadStatus('Optimizing audio track with FFmpeg...');
+          updateProgress(20);
           const ffmpeg = await getFFmpeg();
           
           const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, '');
@@ -205,6 +227,7 @@ export function UploadTab({ onVideoUpload, onSRTUpload, onTranscriptionComplete,
           ]);
           
           const audioData = await ffmpeg.readFile(outputName);
+          updateProgress(35);
           
           try {
             await ffmpeg.deleteFile(inputName);
@@ -222,6 +245,7 @@ export function UploadTab({ onVideoUpload, onSRTUpload, onTranscriptionComplete,
       }
       
       setUploadStatus('Transcribing with Gemini Multi-Speaker Diarization...');
+      updateProgress(40);
       let res: Response | null = null;
       let storageSuccess = false;
       let uploadedUrl: string | undefined = undefined;
@@ -285,6 +309,9 @@ export function UploadTab({ onVideoUpload, onSRTUpload, onTranscriptionComplete,
           body: formData,
         });
       }
+
+      clearInterval(progressTimer);
+      updateProgress(75);
       
       const responseText = await res.text();
       let data: any = null;
@@ -320,20 +347,25 @@ export function UploadTab({ onVideoUpload, onSRTUpload, onTranscriptionComplete,
           throw new Error("Failed to parse the transcribed text into captions. Format received was invalid.");
         }
         
+        updateProgress(82);
         // Automated step 2: Run semantic emotion & sound analysis
         const enriched = await runAutomaticSemanticAnalysis(parsed, fileToUpload, uploadedUrl);
 
+        updateProgress(98);
         setUploadStatus('Directing to Caption Studio...');
         setCurrentStep(3);
 
+        updateProgress(100);
         onTranscriptionComplete(enriched, srtText);
       } else {
         throw new Error('No transcription returned from speech engine');
       }
     } catch (err: any) {
+      clearInterval(progressTimer);
       console.error(err);
       setError(err.message || 'An error occurred during transcription.');
     } finally {
+      clearInterval(progressTimer);
       setIsUploading(false);
       onUploadStateChange?.(false);
       setUploadStatus('');
@@ -417,15 +449,34 @@ export function UploadTab({ onVideoUpload, onSRTUpload, onTranscriptionComplete,
         />
         
         {isUploading ? (
-          <div className="flex flex-col items-center py-6 text-auralis">
-            <Loader2 className="w-10 h-10 mb-4 animate-spin text-auralis" />
+          <div className="flex flex-col items-center py-6 text-auralis w-full max-w-lg mx-auto">
+            <Loader2 className="w-10 h-10 mb-3 animate-spin text-auralis" />
             <p className={cn(
-              "text-sm font-bold tracking-wide uppercase transition-colors duration-300",
+              "text-sm font-bold tracking-wide uppercase transition-colors duration-300 mb-1",
               isLight ? "text-zinc-800" : "text-white"
             )}>
               {uploadStatus || "Processing AI Transcription & Semantic Analysis..."}
             </p>
             
+            {/* Visual Progress Bar & Percentage Done */}
+            <div className="w-full my-3 px-4">
+              <div className="flex items-center justify-between mb-1.5 text-xs font-bold">
+                <span className={isLight ? "text-zinc-600" : "text-zinc-400"}>Transcription & AI Analysis</span>
+                <span className="text-auralis font-mono text-xs font-black bg-auralis/10 px-2 py-0.5 rounded-md border border-auralis/30 shadow-xs">
+                  {progressPercent}% Complete
+                </span>
+              </div>
+              <div className={cn(
+                "w-full h-3 rounded-full overflow-hidden border p-0.5",
+                isLight ? "bg-zinc-200 border-zinc-300" : "bg-white/10 border-white/15"
+              )}>
+                <div 
+                  className="h-full bg-gradient-to-r from-auralis via-[#FFD700] to-auralis transition-all duration-300 rounded-full shadow-inner"
+                  style={{ width: `${Math.min(100, Math.max(5, progressPercent))}%` }}
+                />
+              </div>
+            </div>
+
             {/* Step Progress Pills */}
             <div className="flex items-center gap-2 mt-4">
               <div className={cn(
