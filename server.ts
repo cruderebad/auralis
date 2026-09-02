@@ -16,6 +16,9 @@ import os from "os";
 const __filename = typeof import.meta !== "undefined" && import.meta.url ? fileURLToPath(import.meta.url) : "";
 const __dirname = __filename ? path.dirname(__filename) : "";
 
+export const config = { maxDuration: 60 };
+export const maxDuration = 60;
+
 export const app = express();
 const PORT = 3000;
 
@@ -58,10 +61,11 @@ if (!process.env.VERCEL && !fs.existsSync(uploadsDir)) {
   const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
 
   const DEFAULT_GEMINI_MODELS = [
+    "gemini-2.0-flash",
     "gemini-2.5-flash",
-    "gemini-2.5-pro",
+    "gemini-1.5-flash",
     "gemini-3.7-flash",
-    "gemini-1.5-flash"
+    "gemini-flash-latest"
   ];
 
   async function callGeminiWithResilience(
@@ -92,10 +96,17 @@ if (!process.env.VERCEL && !fs.existsSync(uploadsDir)) {
           const errString = String(err?.message || err);
           console.warn(`[Gemini SDK] Model '${currentModel}' (attempt ${attempt + 1}) encountered issue: ${errString}`);
           
-          const isTransient = 
+          const isHighDemandOr503 = 
             errString.includes("503") ||
             errString.includes("UNAVAILABLE") ||
-            errString.includes("high demand") ||
+            errString.includes("high demand");
+
+          if (isHighDemandOr503) {
+            // Model server is experiencing outage/high demand, skip immediately to next model
+            break;
+          }
+
+          const isTransient = 
             errString.includes("429") ||
             errString.includes("RESOURCE_EXHAUSTED") ||
             errString.includes("quota") ||
@@ -103,7 +114,7 @@ if (!process.env.VERCEL && !fs.existsSync(uploadsDir)) {
             errString.includes("rate limit");
 
           if (isTransient && attempt === 0) {
-            await new Promise((res) => setTimeout(res, 1000));
+            await new Promise((res) => setTimeout(res, 500));
             continue;
           }
           break;
@@ -525,7 +536,7 @@ IMPORTANT INSTRUCTIONS:
       let response;
       try {
         response = await callGeminiWithResilience(ai, {
-          models: ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-3.7-flash", "gemini-1.5-flash"],
+          models: ["gemini-2.0-flash", "gemini-2.5-flash", "gemini-1.5-flash", "gemini-3.7-flash"],
           contents: [
             {
               text: promptText
@@ -908,7 +919,7 @@ Return a JSON array of segments. Each segment must have:
    Each word object needs "word", "emotion" (string), "emphasis" (float 0.0-1.0), "is_focus" (boolean), and "id" (number or null).`;
 
       const response = await callGeminiWithResilience(ai, {
-        models: ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-3.7-flash", "gemini-1.5-flash"],
+        models: ["gemini-2.0-flash", "gemini-2.5-flash", "gemini-1.5-flash", "gemini-3.7-flash"],
         contents: promptText,
         config: {
           responseMimeType: "application/json",
@@ -1077,7 +1088,7 @@ Fields: "id", "emotion", "emotionIntensity", "speechStyle", "tone", "bracketLabe
           speechContents.push(speechPrompt);
 
           const speechResponse = await callGeminiWithResilience(ai, {
-            models: ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-3.7-flash", "gemini-1.5-flash"],
+            models: ["gemini-2.0-flash", "gemini-2.5-flash", "gemini-1.5-flash", "gemini-3.7-flash"],
             contents: speechContents,
             config: {
               responseMimeType: "application/json",
@@ -1157,7 +1168,7 @@ ${JSON.stringify(segments.slice(0, 30).map(s => ({ start: s.start, end: s.end, t
           soundContents.push(soundPrompt);
 
           const soundResponse = await callGeminiWithResilience(ai, {
-            models: ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-3.7-flash", "gemini-1.5-flash"],
+            models: ["gemini-2.0-flash", "gemini-2.5-flash", "gemini-1.5-flash", "gemini-3.7-flash"],
             contents: soundContents,
             config: {
               responseMimeType: "application/json",
@@ -1264,7 +1275,7 @@ ${JSON.stringify(segments.map((s: any) => ({ id: s.id, text: s.text, speaker: s.
 Return a JSON array of objects with fields: "id" (matching string) and "text" (translated string with emotion brackets preserved).`;
 
       const response = await callGeminiWithResilience(ai, {
-        models: ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-3.7-flash", "gemini-1.5-flash"],
+        models: ["gemini-2.0-flash", "gemini-2.5-flash", "gemini-1.5-flash", "gemini-3.7-flash"],
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -1333,7 +1344,7 @@ Instructions:
 Return JSON.`;
 
       const response = await callGeminiWithResilience(ai, {
-        models: ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-3.7-flash", "gemini-1.5-flash"],
+        models: ["gemini-2.0-flash", "gemini-2.5-flash", "gemini-1.5-flash", "gemini-3.7-flash"],
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -1657,8 +1668,13 @@ Return JSON.`;
     if (fs.existsSync(filePath)) {
       res.download(filePath, "video.mp4");
     } else {
-      res.status(404).send("File not found");
+      res.status(404).json({ error: "File not found" });
     }
+  });
+
+  // Unmatched API route catch-all (ensures JSON response instead of falling through to SPA index.html)
+  app.all("/api/*", (req, res) => {
+    res.status(404).json({ error: "API route not found", path: req.path });
   });
 
   // Vite middleware for development

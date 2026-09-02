@@ -1230,17 +1230,24 @@ export function Sidebar({
           try {
             data = responseText ? JSON.parse(responseText) : {};
           } catch {
+            if (res.status === 504 || responseText.includes('FUNCTION_INVOCATION_TIMEOUT')) {
+              throw new Error("Vercel Function Timeout (504): Processing took longer than Vercel's execution limit (10s on Free plan). Please try a shorter video/audio clip or trim media under 2 minutes.");
+            }
+            if (responseText.includes('<!doctype') || responseText.includes('<html') || responseText.includes('<head>')) {
+              throw new Error(`Server returned HTML instead of JSON (${res.status}). Please verify the server is running and the API route exists.`);
+            }
             if (!res.ok) {
-              if (responseText.includes('<!doctype') || responseText.includes('<html')) {
-                throw new Error(`Server temporarily unavailable (${res.status}). Please retry in a few seconds.`);
-              }
               throw new Error(`Server error (${res.status}): ${responseText.substring(0, 150)}`);
             }
-            throw new Error('Received non-JSON response from server.');
+            throw new Error(`Invalid server response format (${res.status}). Expected valid JSON.`);
           }
 
           if (!res.ok) {
-            throw new Error(data?.error || data?.message || `Transcription failed (${res.status})`);
+            let errorMsg = data?.error || data?.message || `Transcription failed (${res.status})`;
+            if (res.status === 504 || String(errorMsg).includes('FUNCTION_INVOCATION_TIMEOUT')) {
+              errorMsg = "Vercel Function Timeout (504): Processing took longer than Vercel's execution limit. Please try a shorter video/audio clip under 2 minutes.";
+            }
+            throw new Error(errorMsg);
           }
           
           if (data?.srt) {

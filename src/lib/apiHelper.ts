@@ -16,12 +16,12 @@ export async function safeFetchJson<T = any>(
       data = JSON.parse(text);
     } catch {
       // Response was not JSON
+      if (text.includes('<!doctype') || text.includes('<html') || text.includes('<head>')) {
+        throw new Error(
+          `Server error (${res.status}): The server returned an HTML page instead of JSON. Please check backend service status.`
+        );
+      }
       if (!res.ok) {
-        if (text.includes('<!doctype') || text.includes('<html') || text.includes('<head>')) {
-          throw new Error(
-            `Server error (${res.status}): The server encountered a temporary issue. Please try again.`
-          );
-        }
         throw new Error(`Server error (${res.status}): ${text.substring(0, 150)}`);
       }
       throw new Error(
